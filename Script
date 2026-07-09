@@ -1,543 +1,69 @@
---[[
-    Jujutsu Shenanigans - Ambient Utility Suite
-    Modern glassmorphism UI with smooth animations
-]]
+-- Simple test - does this print?
+print("Script starting...")
 
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local TextChatService = game:GetService("TextChatService")
-local Stats = game:GetService("Stats")
-local TweenService = game:GetService("TweenService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
 local player = Players.LocalPlayer
-local mouse = player:GetMouse()
 
--- ============================================
--- AMBIENT CONFIGURATION
--- ============================================
-local Theme = {
-    Background = Color3.fromRGB(15, 15, 20),
-    Glass = Color3.fromRGB(25, 25, 35),
-    Accent = Color3.fromRGB(139, 92, 246), -- Purple
-    Accent2 = Color3.fromRGB(236, 72, 153), -- Pink
-    Text = Color3.fromRGB(243, 244, 246),
-    TextDim = Color3.fromRGB(156, 163, 175),
-    Success = Color3.fromRGB(52, 211, 153),
-    Warning = Color3.fromRGB(251, 191, 36)
-}
+print("Player found:", player.Name)
 
-local Config = {
-    EmoteSpam = {Enabled = false, Interval = 0.4, Emotes = {"Emote1", "Emote2", "Emote3", "Emote4", "Emote5"}},
-    CursorTrail = {Enabled = true, Color = Theme.Accent, Size = 5, Lifetime = 0.6},
-    RainbowChat = {Enabled = false},
-    DomainGen = {
-        Adjectives = {"Infinite", "Cursed", "Demon", "Void", "Celestial", "Corrupted", "Eternal", "Chaotic"},
-        Nouns = {"Pizza", "Naptime", "Procrastination", "WiFi", "Taxes", "Monday", "Lag", "Loading"},
-        Suffixes = {"Expansion", "Zone", "Realm", "Dimension", "Prison", "Paradise"}
-    }
-}
-
--- ============================================
--- UTILITY FUNCTIONS
--- ============================================
-local function tween(obj, props, duration)
-    TweenService:Create(obj, TweenInfo.new(duration or 0.3, Enum.EasingStyle.Quart), props):Play()
-end
-
-local function createBlur()
-    local blur = Instance.new("BlurEffect")
-    blur.Size = 20
-    blur.Parent = game.Lighting
-    return blur
-end
-
--- ============================================
--- MAIN GUI SETUP
--- ============================================
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "AmbientUI"
-screenGui.Parent = game.CoreGui
-
--- Background blur effect
-local blur = createBlur()
-
--- Main Container (Centered, Glassmorphism)
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 380, 0, 280)
-mainFrame.Position = UDim2.new(0.5, -190, 0.5, -140)
-mainFrame.BackgroundColor3 = Theme.Glass
-mainFrame.BackgroundTransparency = 0.2
-mainFrame.BorderSizePixel = 0
-mainFrame.ClipsDescendants = true
-mainFrame.Parent = screenGui
-
--- Gradient background
-local gradient = Instance.new("UIGradient")
-gradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Theme.Glass),
-    ColorSequenceKeypoint.new(1, Theme.Background)
-})
-gradient.Rotation = 45
-gradient.Parent = mainFrame
-
--- Corner radius
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 20)
-corner.Parent = mainFrame
-
--- Stroke (glow effect)
-local stroke = Instance.new("UIStroke")
-stroke.Color = Theme.Accent
-stroke.Thickness = 1.5
-stroke.Transparency = 0.7
-stroke.Parent = mainFrame
-
--- Shadow
-local shadow = Instance.new("ImageLabel")
-shadow.Name = "Shadow"
-shadow.AnchorPoint = Vector2.new(0.5, 0.5)
-shadow.BackgroundTransparency = 1
-shadow.Position = UDim2.new(0.5, 0, 0.5, 8)
-shadow.Size = UDim2.new(1, 40, 1, 40)
-shadow.ZIndex = -1
-shadow.Image = "rbxassetid://6015897843"
-shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-shadow.ImageTransparency = 0.6
-shadow.Parent = mainFrame
-
--- ============================================
--- HEADER SECTION
--- ============================================
-local header = Instance.new("Frame")
-header.Size = UDim2.new(1, 0, 0, 60)
-header.BackgroundTransparency = 1
-header.Parent = mainFrame
-
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -20, 0, 35)
-title.Position = UDim2.new(0, 20, 0, 15)
-title.BackgroundTransparency = 1
-title.Text = "Jujutsu Utility"
-title.TextColor3 = Theme.Text
-title.Font = Enum.Font.GothamBlack
-title.TextSize = 24
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Parent = header
-
-local subtitle = Instance.new("TextLabel")
-subtitle.Size = UDim2.new(1, -20, 0, 20)
-subtitle.Position = UDim2.new(0, 20, 0, 40)
-subtitle.BackgroundTransparency = 1
-subtitle.Text = "Ambient Edition v2.0"
-subtitle.TextColor3 = Theme.TextDim
-subtitle.Font = Enum.Font.GothamMedium
-subtitle.TextSize = 12
-subtitle.TextXAlignment = Enum.TextXAlignment.Left
-subtitle.Parent = header
-
--- Close/Minimize buttons
-local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 30, 0, 30)
-closeBtn.Position = UDim2.new(1, -40, 0, 15)
-closeBtn.BackgroundColor3 = Theme.Accent2
-closeBtn.Text = "×"
-closeBtn.TextColor3 = Theme.Text
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 20
-closeBtn.Parent = header
-
-local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(1, 0)
-closeCorner.Parent = closeBtn
-
--- ============================================
--- STATS SECTION (Left Side)
--- ============================================
-local statsFrame = Instance.new("Frame")
-statsFrame.Size = UDim2.new(0.45, -10, 1, -80)
-statsFrame.Position = UDim2.new(0, 15, 0, 70)
-statsFrame.BackgroundColor3 = Theme.Background
-statsFrame.BackgroundTransparency = 0.5
-statsFrame.BorderSizePixel = 0
-statsFrame.Parent = mainFrame
-
-local statsCorner = Instance.new("UICorner")
-statsCorner.CornerRadius = UDim.new(0, 12)
-statsCorner.Parent = statsFrame
-
-local statsTitle = Instance.new("TextLabel")
-statsTitle.Size = UDim2.new(1, -10, 0, 25)
-statsTitle.Position = UDim2.new(0, 10, 0, 10)
-statsTitle.BackgroundTransparency = 1
-statsTitle.Text = "📊 Live Stats"
-statsTitle.TextColor3 = Theme.Accent
-statsTitle.Font = Enum.Font.GothamBold
-statsTitle.TextSize = 14
-statsTitle.TextXAlignment = Enum.TextXAlignment.Left
-statsTitle.Parent = statsFrame
-
-local statsContainer = Instance.new("Frame")
-statsContainer.Size = UDim2.new(1, -20, 1, -45)
-statsContainer.Position = UDim2.new(0, 10, 0, 40)
-statsContainer.BackgroundTransparency = 1
-statsContainer.Parent = statsFrame
-
--- Stat items
-local statLabels = {}
-local statNames = {"Players", "Ping", "FPS", "Time"}
-
-for i, name in ipairs(statNames) do
-    local item = Instance.new("Frame")
-    item.Size = UDim2.new(1, 0, 0, 35)
-    item.Position = UDim2.new(0, 0, 0, (i-1) * 40)
-    item.BackgroundTransparency = 1
-    item.Parent = statsContainer
+-- Try creating basic UI
+local success, err = pcall(function()
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "TestUI"
     
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(0.5, 0, 1, 0)
-    label.BackgroundTransparency = 1
-    label.Text = name
-    label.TextColor3 = Theme.TextDim
-    label.Font = Enum.Font.GothamMedium
-    label.TextSize = 12
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = item
+    -- Try different parent methods for compatibility
+    if syn then
+        screenGui.Parent = game.CoreGui
+        print("Using Synapse method")
+    elseif gethui then
+        screenGui.Parent = gethui()
+        print("Using gethui method")
+    else
+        screenGui.Parent = player:WaitForChild("PlayerGui")
+        print("Using PlayerGui method")
+    end
     
-    local value = Instance.new("TextLabel")
-    value.Size = UDim2.new(0.5, 0, 1, 0)
-    value.Position = UDim2.new(0.5, 0, 0, 0)
-    value.BackgroundTransparency = 1
-    value.Text = "..."
-    value.TextColor3 = Theme.Text
-    value.Font = Enum.Font.GothamBold
-    value.TextSize = 14
-    value.TextXAlignment = Enum.TextXAlignment.Right
-    value.Parent = item
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 200, 0, 100)
+    frame.Position = UDim2.new(0.5, -100, 0.5, -50)
+    frame.BackgroundColor3 = Color3.fromRGB(139, 92, 246)
+    frame.Parent = screenGui
     
-    statLabels[name] = value
-end
-
--- ============================================
--- CONTROLS SECTION (Right Side)
--- ============================================
-local controlsFrame = Instance.new("Frame")
-controlsFrame.Size = UDim2.new(0.55, -20, 1, -80)
-controlsFrame.Position = UDim2.new(0.45, 5, 0, 70)
-controlsFrame.BackgroundColor3 = Theme.Background
-controlsFrame.BackgroundTransparency = 0.5
-controlsFrame.BorderSizePixel = 0
-controlsFrame.Parent = mainFrame
-
-local controlsCorner = Instance.new("UICorner")
-controlsCorner.CornerRadius = UDim.new(0, 12)
-controlsCorner.Parent = controlsFrame
-
-local controlsTitle = Instance.new("TextLabel")
-controlsTitle.Size = UDim2.new(1, -10, 0, 25)
-controlsTitle.Position = UDim2.new(0, 10, 0, 10)
-controlsTitle.BackgroundTransparency = 1
-controlsTitle.Text = "⚡ Controls"
-controlsTitle.TextColor3 = Theme.Accent2
-controlsTitle.Font = Enum.Font.GothamBold
-controlsTitle.TextSize = 14
-controlsTitle.TextXAlignment = Enum.TextXAlignment.Left
-controlsTitle.Parent = controlsFrame
-
--- Toggle buttons
-local toggles = {
-    {name = "Emote Spam", key = "T", config = "EmoteSpam", color = Theme.Accent},
-    {name = "Cursor Trail", key = "H", config = "CursorTrail", color = Theme.Accent2},
-    {name = "Rainbow Chat", key = "J", config = "RainbowChat", color = Theme.Success},
-    {name = "Domain Gen", key = "G", config = nil, color = Theme.Warning}
-}
-
-local toggleButtons = {}
-
-for i, toggle in ipairs(toggles) do
-    local btn = Instance.new("Frame")
-    btn.Size = UDim2.new(1, -20, 0, 40)
-    btn.Position = UDim2.new(0, 10, 0, 40 + (i-1) * 48)
-    btn.BackgroundColor3 = Theme.Glass
-    btn.BackgroundTransparency = 0.3
-    btn.BorderSizePixel = 0
-    btn.Parent = controlsFrame
+    local text = Instance.new("TextLabel")
+    text.Size = UDim2.new(1, 0, 1, 0)
+    text.BackgroundTransparency = 1
+    text.Text = "Script Loaded!\nPress T for emotes"
+    text.TextColor3 = Color3.fromRGB(255, 255, 255)
+    text.Font = Enum.Font.GothamBold
+    text.TextSize = 16
+    text.Parent = frame
     
-    local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(0, 8)
-    btnCorner.Parent = btn
+    print("UI Created Successfully")
     
-    local indicator = Instance.new("Frame")
-    indicator.Size = UDim2.new(0, 4, 1, 0)
-    indicator.BackgroundColor3 = toggle.color
-    indicator.BorderSizePixel = 0
-    indicator.Parent = btn
+    -- Simple emote spam
+    local UserInputService = game:GetService("UserInputService")
+    local spamming = false
     
-    local indCorner = Instance.new("UICorner")
-    indCorner.CornerRadius = UDim.new(0, 8)
-    indCorner.Parent = indicator
-    
-    local name = Instance.new("TextLabel")
-    name.Size = UDim2.new(1, -60, 1, 0)
-    name.Position = UDim2.new(0, 15, 0, 0)
-    name.BackgroundTransparency = 1
-    name.Text = toggle.name
-    name.TextColor3 = Theme.Text
-    name.Font = Enum.Font.GothamBold
-    name.TextSize = 13
-    name.TextXAlignment = Enum.TextXAlignment.Left
-    name.Parent = btn
-    
-    local keybind = Instance.new("TextLabel")
-    keybind.Size = UDim2.new(0, 30, 0, 20)
-    keybind.Position = UDim2.new(1, -40, 0.5, -10)
-    keybind.BackgroundColor3 = Theme.Background
-    keybind.Text = toggle.key
-    keybind.TextColor3 = Theme.TextDim
-    keybind.Font = Enum.Font.GothamBold
-    name.TextSize = 11
-    keybind.Parent = btn
-    
-    local keyCorner = Instance.new("UICorner")
-    keyCorner.CornerRadius = UDim.new(0, 4)
-    keyCorner.Parent = keybind
-    
-    -- Hover effect
-    btn.MouseEnter:Connect(function()
-        tween(btn, {BackgroundTransparency = 0.1}, 0.2)
-    end)
-    
-    btn.MouseLeave:Connect(function()
-        tween(btn, {BackgroundTransparency = 0.3}, 0.2)
-    end)
-    
-    toggleButtons[toggle.config or toggle.name] = {frame = btn, indicator = indicator, color = toggle.color}
-end
-
--- ============================================
--- ANIMATED BACKGROUND ELEMENTS
--- ============================================
-local ambientContainer = Instance.new("Frame")
-ambientContainer.Size = UDim2.new(1, 0, 1, 0)
-ambientContainer.BackgroundTransparency = 1
-ambientContainer.ZIndex = -1
-ambientContainer.Parent = mainFrame
-
--- Floating orbs
-for i = 1, 3 do
-    local orb = Instance.new("Frame")
-    orb.Size = UDim2.new(0, 100, 0, 100)
-    orb.Position = UDim2.new(math.random(), 0, math.random(), 0)
-    orb.BackgroundColor3 = i == 1 and Theme.Accent or i == 2 and Theme.Accent2 or Theme.Success
-    orb.BackgroundTransparency = 0.9
-    orb.BorderSizePixel = 0
-    orb.ZIndex = -1
-    orb.Parent = ambientContainer
-    
-    local orbCorner = Instance.new("UICorner")
-    orbCorner.CornerRadius = UDim.new(1, 0)
-    orbCorner.Parent = orb
-    
-    -- Animate orbs
-    spawn(function()
-        while wait(0.05) do
-            if orb and orb.Parent then
-                local currentPos = orb.Position
-                orb.Position = UDim2.new(
-                    currentPos.X.Scale + math.sin(tick() * 0.5 + i) * 0.001,
-                    currentPos.X.Offset,
-                    currentPos.Y.Scale + math.cos(tick() * 0.3 + i) * 0.001,
-                    currentPos.Y.Offset
-                )
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then return end
+        if input.KeyCode == Enum.KeyCode.T then
+            spamming = not spamming
+            text.Text = spamming and "Emote Spam: ON" or "Emote Spam: OFF"
+            
+            if spamming then
+                spawn(function()
+                    while spamming do
+                        game:GetService("ReplicatedStorage").EmoteEvent:FireServer("Emote1")
+                        wait(0.5)
+                    end
+                end)
             end
         end
     end)
+end)
+
+if not success then
+    warn("ERROR:", err)
+else
+    print("All systems go!")
 end
-
--- ============================================
--- FUNCTIONALITY
--- ============================================
-
--- Update stats
-spawn(function()
-    while wait(0.5) do
-        local ping = 0
-        pcall(function()
-            ping = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
-        end)
-        
-        local fps = math.floor(1 / RunService.RenderStepped:Wait())
-        local players = #Players:GetPlayers()
-        local timeStr = game.Lighting.TimeOfDay:sub(1, 5)
-        
-        statLabels["Players"].Text = tostring(players)
-        statLabels["Ping"].Text = ping .. " ms"
-        statLabels["FPS"].Text = tostring(fps)
-        statLabels["Time"].Text = timeStr
-        
-        -- Update toggle indicators
-        for configName, btnData in pairs(toggleButtons) do
-            if Config[configName] then
-                local isActive = Config[configName].Enabled
-                tween(btnData.indicator, {
-                    BackgroundColor3 = isActive and btnData.color or Theme.TextDim,
-                    Size = UDim2.new(0, isActive and 4 or 4, 1, 0)
-                }, 0.2)
-            end
-        end
-    end
-end)
-
--- Cursor trail
-RunService.RenderStepped:Connect(function()
-    if not Config.CursorTrail.Enabled then return end
-    
-    local pos = UserInputService:GetMouseLocation()
-    
-    local dot = Instance.new("Frame")
-    dot.Size = UDim2.new(0, Config.CursorTrail.Size, 0, Config.CursorTrail.Size)
-    dot.Position = UDim2.new(0, pos.X - Config.CursorTrail.Size/2, 0, pos.Y - Config.CursorTrail.Size/2)
-    dot.BackgroundColor3 = Config.CursorTrail.Color
-    dot.BorderSizePixel = 0
-    dot.Parent = screenGui
-    
-    local dotCorner = Instance.new("UICorner")
-    dotCorner.CornerRadius = UDim.new(1, 0)
-    dotCorner.Parent = dot
-    
-    spawn(function()
-        for i = 1, 10 do
-            if dot and dot.Parent then
-                dot.BackgroundTransparency = i / 10
-                dot.Size = UDim2.new(0, Config.CursorTrail.Size * (1 - i/15), 0, Config.CursorTrail.Size * (1 - i/15))
-                wait(Config.CursorTrail.Lifetime / 10)
-            end
-        end
-        if dot then dot:Destroy() end
-    end)
-end)
-
--- Emote spam
-spawn(function()
-    while wait() do
-        if Config.EmoteSpam.Enabled then
-            pcall(function()
-                local emote = Config.EmoteSpam.Emotes[math.random(1, #Config.EmoteSpam.Emotes)]
-                ReplicatedStorage.EmoteEvent:FireServer(emote)
-            end)
-            wait(Config.EmoteSpam.Interval)
-        end
-    end
-end)
-
--- Domain generator
-local function generateDomain()
-    local adj = Config.DomainGen.Adjectives[math.random(1, #Config.DomainGen.Adjectives)]
-    local noun = Config.DomainGen.Nouns[math.random(1, #Config.DomainGen.Nouns)]
-    local suffix = Config.DomainGen.Suffixes[math.random(1, #Config.DomainGen.Suffixes)]
-    return adj .. " " .. noun .. " " .. suffix
-end
-
--- Keybinds
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    
-    if input.KeyCode == Enum.KeyCode.T then
-        Config.EmoteSpam.Enabled = not Config.EmoteSpam.Enabled
-    elseif input.KeyCode == Enum.KeyCode.H then
-        Config.CursorTrail.Enabled = not Config.CursorTrail.Enabled
-    elseif input.KeyCode == Enum.KeyCode.J then
-        Config.RainbowChat.Enabled = not Config.RainbowChat.Enabled
-    elseif input.KeyCode == Enum.KeyCode.G then
-        local domain = generateDomain()
-        pcall(function()
-            ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
-                "Domain Expansion: " .. domain .. "!!!", "All"
-            )
-        end)
-        
-        -- Visual popup
-        local popup = Instance.new("TextLabel")
-        popup.Size = UDim2.new(0, 400, 0, 50)
-        popup.Position = UDim2.new(0.5, -200, 0.8, 0)
-        popup.BackgroundColor3 = Theme.Glass
-        popup.BackgroundTransparency = 0.2
-        popup.Text = "Domain Expansion: " .. domain .. "!!!"
-        popup.TextColor3 = Theme.Accent
-        popup.Font = Enum.Font.GothamBlack
-        popup.TextSize = 18
-        popup.Parent = screenGui
-        
-        local popupCorner = Instance.new("UICorner")
-        popupCorner.CornerRadius = UDim.new(0, 12)
-        popupCorner.Parent = popup
-        
-        local popupStroke = Instance.new("UIStroke")
-        popupStroke.Color = Theme.Accent
-        popupStroke.Thickness = 2
-        popupStroke.Parent = popup
-        
-        tween(popup, {Position = UDim2.new(0.5, -200, 0.75, 0)}, 0.3)
-        
-        spawn(function()
-            wait(2.5)
-            tween(popup, {BackgroundTransparency = 1, TextTransparency = 1}, 0.3)
-            wait(0.3)
-            if popup then popup:Destroy() end
-        end)
-    end
-end)
-
--- Close button
-closeBtn.MouseButton1Click:Connect(function()
-    tween(mainFrame, {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)}, 0.3)
-    wait(0.3)
-    blur:Destroy()
-    screenGui:Destroy()
-end)
-
--- Drag functionality
-local dragging = false
-local dragInput = nil
-local dragStart = nil
-local startPos = nil
-
-mainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = mainFrame.Position
-        
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
-
-mainFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        local delta = input.Position - dragStart
-        mainFrame.Position = UDim2.new(
-            startPos.X.Scale,
-            startPos.X.Offset + delta.X,
-            startPos.Y.Scale,
-            startPos.Y.Offset + delta.Y
-        )
-    end
-end)
-
--- Intro animation
-mainFrame.Size = UDim2.new(0, 0, 0, 0)
-mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-tween(mainFrame, {Size = UDim2.new(0, 380, 0, 280), Position = UDim2.new(0.5, -190, 0.5, -140)}, 0.5)
-
-print("✨ Ambient UI Loaded ✨")
